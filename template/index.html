@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Video Streaming Platform</title>
+  
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    h1 {
+      color: #333;
+    }
+    video {
+      margin-top: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Welcome!</h1>
+    <video id="myVideo" controls width="600" height="400"></video>
+  </div>
+
+  <script>
+    function fetchVideoChunk(start, end) {
+      const baseUrl = "http://localhost:3000/stream";
+
+      fetch(`${baseUrl}?start=${start}&end=${end}`)
+        .then(response => response.blob())
+        .then(blob => {
+          const url = URL.createObjectURL(blob);
+          const source = document.createElement("source");
+          source.src = url;
+          source.type = "video/mp4";
+          document.getElementById("myVideo").appendChild(source);
+          source.onloadedmetadata = () => {
+            URL.revokeObjectURL(url);
+          };
+        })
+        .catch(error => console.error(error));
+    }
+
+    function startStreaming() {
+      const video = document.getElementById("myVideo");
+      const videoSize = 1000000;
+      let currentPosition = 0;
+      const chunkSize = 100000;
+
+      function fetchNextChunk() {
+        const nextEnd = Math.min(currentPosition + chunkSize, videoSize);
+        fetchVideoChunk(currentPosition, nextEnd);
+        currentPosition = nextEnd;
+
+        if (currentPosition < videoSize) {
+          setTimeout(fetchNextChunk, 1000);
+        } else {
+          video.play();
+        }
+      }
+
+      fetchNextChunk();
+    }
+
+    startStreaming();
+  </script>
+</body>
+</html>

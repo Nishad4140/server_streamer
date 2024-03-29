@@ -1,0 +1,15 @@
+Employee{
+    ID,
+    NAME,
+    SALARY,
+    JOIN_DATE,
+    DEP_ID
+}
+Department {
+    ID,
+    NAME
+}
+
+SELECT e.name, d.name, MAX(e.salary) max_salary FROM employee e JOIN department d ON d.id = e.dep_id GROUP BY d.name
+
+SELECT e.name FROM employee WHERE salary > (SELECT AVG(salary) FROM employee);
